@@ -62,7 +62,7 @@ server.use(cors({
 //   res.header('Access-Control-Allow-Credentials', true);
 //   res.sendStatus(200);
 // });
-server.options('/*', cors());
+// server.options('/*', cors());
 
 // --- cors() with dynamic origin reflection + optionsSuccessStatus=200 ---
 // const corsOptionsDelegate = (req, callback) => {
