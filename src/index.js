@@ -13,7 +13,7 @@ import enquiry from "./routes/enquiry.route.js";
 import connectDB from "./config/db.js";
 import { middlelog } from "./middleware/middleware.js";
 import admin from "./routes/admin.route.js";
-import speaker from "./routes/speaker.route.js";
+
 import sponsor from "./routes/sponsor.route.js";
 import deadline from "./routes/deadline.route.js";
 import image from "./routes/image.route.js";
@@ -31,28 +31,27 @@ const allowedOrigins = [
   "https://backendicabmet.icabmet.com",
   "https://icabmet.com",
   "http://icabmet.com",
-  
 ];
 
+server.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
 
-
-server.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log('Blocked origin:', origin); // Debug log
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  optionsSuccessStatus: 200 // For legacy browser support
-}));
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log("Blocked origin:", origin); // Debug log
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    optionsSuccessStatus: 200, // For legacy browser support
+  }),
+);
 
 // Add explicit OPTIONS handler for preflight requests
 // server.options('*', (req, res) => {
@@ -81,7 +80,16 @@ server.use(cors({
 // server.options("*", cors(corsOptionsDelegate)); // explicit preflight handler
 
 // --- DB & core middleware ---
-connectDB().then(() => console.log("DB ready"));
+// Connect DB, run seeders, then start server
+const start = async () => {
+  try {
+    await connectDB();
+    console.log("DB ready");
+  } catch (err) {
+    console.error("❌ Failed to initialize DB/seeders:", err);
+  }
+};
+start();
 
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
@@ -92,7 +100,7 @@ server.use(middlelog);
 
 // --- Routes (order matters only if some share paths) ---
 server.use(admin);
-server.use(speaker);
+
 server.use(sponsor);
 server.use(deadline);
 server.use(contact);

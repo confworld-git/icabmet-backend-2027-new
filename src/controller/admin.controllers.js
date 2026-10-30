@@ -100,3 +100,29 @@ export const adminLogout = async (req, res) => {
   res.clearCookie("auth_token");
   res.json({ message: "Logged out successfully" });
 };
+
+import { mail } from "../utils/smtp.js";
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const admin = await Admin.findOne();
+    if (!admin) {
+      return res.status(404).json({ message: "Admin user not found" });
+    }
+
+    const emailHtml = `
+      <h2>ICABMET Admin Credentials</h2>
+      <p>Here are your admin credentials:</p>
+      <p><strong>Email:</strong> ${admin.email}</p>
+      <p><strong>Password:</strong> ${admin.password}</p>
+      <p>Please keep this information secure.</p>
+    `;
+
+    await mail("ICABMET Admin Credentials", emailHtml, [], "drgeetha@confworld.org");
+
+    res.json({ message: "Credentials sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
